@@ -1,6 +1,6 @@
 {
 
-    "name": "oat-sa/extension-tao-outcome",
+    "name": "openthinklabs/extension-tao-outcome",
      "authors" : [
 		{
 		"name" : "Open Assessment Technologies S.A.",
@@ -53,15 +53,52 @@
     "extra" : {
     	"tao-extension-name" : "taoResultServer"
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:openthinklabs/oatbox-extension-installer.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:openthinklabs/generis.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:openthinklabs/tao-core.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:openthinklabs/lib-tao-dtms.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:openthinklabs/lib-generis-search.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:openthinklabs/jig.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:openthinklabs/composer-npm-bridge.git"
+        }
+     ],   
     "require": {
-        "oat-sa/oatbox-extension-installer": "~1.1||dev-master",
-		"oat-sa/generis" : ">=14.0.0",
-		"oat-sa/tao-core" : ">=47.0.0",
-		"oat-sa/lib-tao-dtms" : "1.0.0"
+        "openthinklabs/oatbox-extension-installer": "1.2.2",
+        "openthinklabs/generis" : "15.11.0.4",
+        "openthinklabs/tao-core" : "48.66.1.3",
+	"openthinklabs/lib-tao-dtms" : "1.0.0.1"
 	},
     "autoload" : {
         "psr-4" : {
             "oat\\taoResultServer\\" : ""
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true,
+            "openthinklabs/oatbox-extension-installer": true,
+            "openthinklabs/composer-npm-bridge": true
         }
     }
 }
