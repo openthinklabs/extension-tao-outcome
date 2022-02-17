@@ -85,9 +85,9 @@
      ],   
     "require": {
         "openthinklabs/oatbox-extension-installer": "1.2.2",
-        "openthinklabs/generis" : "15.11.0.4",
-        "openthinklabs/tao-core" : "~48.66.1.4",
-	"openthinklabs/lib-tao-dtms" : "1.0.0.1"
+        "openthinklabs/generis" : "~15.11.0.5",
+        "openthinklabs/tao-core" : "~48.66.1.8",
+    	"openthinklabs/lib-tao-dtms" : "1.0.0.1"
 	},
     "autoload" : {
         "psr-4" : {
