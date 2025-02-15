@@ -15,14 +15,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2019 (original work) Open Assessment Technologies SA;
- *
+ * Copyright (c) 2019-2024 (original work) Open Assessment Technologies SA;
  */
 
 namespace oat\taoResultServer\models\Mapper;
 
 use common_exception_InvalidArgumentType;
 use common_exception_NotImplemented;
+use DateTimeInterface;
 use LogicException;
 use oat\dtms\DateTime;
 use oat\oatbox\service\ConfigurableService;
@@ -76,7 +76,9 @@ class ResultMapper extends ConfigurableService
             $contextSessionIdentifiers = iterator_to_array($context->getSessionIdentifiers());
             /** @var SessionIdentifier $sessionIdentifier */
             foreach ($contextSessionIdentifiers as $sessionIdentifier) {
-                $sessionIdentifiers[$sessionIdentifier->getIdentifier()->getValue()] = $sessionIdentifier->getSourceID()->getValue();
+                $sessionIdentifiers[$sessionIdentifier->getIdentifier()->getValue()] = $sessionIdentifier
+                    ->getSourceID()
+                    ->getValue();
             }
         }
 
@@ -116,7 +118,10 @@ class ResultMapper extends ConfigurableService
         }
 
         return [
-            $testResult->getIdentifier()->getValue() => $this->createVariables($testResult->getItemVariables(), $testResult->getDatestamp())
+            $testResult->getIdentifier()->getValue() => $this->createVariables(
+                $testResult->getItemVariables(),
+                $testResult->getDatestamp()
+            )
         ];
     }
 
@@ -146,7 +151,10 @@ class ResultMapper extends ConfigurableService
             if (!$itemResult->hasItemVariables()) {
                 continue;
             }
-            $itemVariables[$itemResult->getIdentifier()->getValue()] = $this->createVariables($itemResult->getItemVariables(), $itemResult->getDatestamp());
+            $itemVariables[$itemResult->getIdentifier()->getValue()] = $this->createVariables(
+                $itemResult->getItemVariables(),
+                $itemResult->getDatestamp()
+            );
         }
 
         return $itemVariables;
@@ -163,8 +171,12 @@ class ResultMapper extends ConfigurableService
      * @throws common_exception_NotImplemented If itemVariable is not outcome|response (e.g. template)
      * @throws common_exception_InvalidArgumentType
      */
-    protected function createVariables(ItemVariableCollection $itemVariables, DateTime $datetime)
+    protected function createVariables(ItemVariableCollection $itemVariables, DateTimeInterface $datetime)
     {
+        if (!$datetime instanceof DateTime) {
+            $datetime = new DateTime($datetime->format(DateTime::ISO8601));
+        }
+
         $variables = [];
         $i = 0;
         foreach ($itemVariables as $itemVariable) {
@@ -180,8 +192,9 @@ class ResultMapper extends ConfigurableService
 
                 case ResultTemplateVariable::class:
                 default:
-                    throw new common_exception_NotImplemented('Qti Result parser cannot deals with "' . get_class($itemVariable) . '".');
-                    break;
+                    throw new common_exception_NotImplemented(
+                        'Qti Result parser cannot deals with "' . get_class($itemVariable) . '".'
+                    );
             }
 
             $datetime->modify('+' . $i . ' microsecond');
@@ -201,8 +214,10 @@ class ResultMapper extends ConfigurableService
      * @return taoResultServer_models_classes_Variable
      * @throws common_exception_InvalidArgumentType
      */
-    protected function createVariableFromItemVariable(ItemVariable $itemVariable, taoResultServer_models_classes_Variable $variable)
-    {
+    protected function createVariableFromItemVariable(
+        ItemVariable $itemVariable,
+        taoResultServer_models_classes_Variable $variable
+    ) {
         $variable->setIdentifier((string) $itemVariable->getIdentifier());
         $variable->setCardinality(Cardinality::getNameByConstant($itemVariable->getCardinality()));
 
@@ -283,11 +298,15 @@ class ResultMapper extends ConfigurableService
         );
 
         if ($itemVariable->getCandidateResponse()->hasValues()) {
-            $variable->setCandidateResponse($this->serializeValueCollection($itemVariable->getCandidateResponse()->getValues()));
+            $variable->setCandidateResponse(
+                $this->serializeValueCollection($itemVariable->getCandidateResponse()->getValues())
+            );
         }
 
         if ($itemVariable->hasCorrectResponse()) {
-            $variable->setCorrectResponse($this->serializeValueCollection($itemVariable->getCorrectResponse()->getValues()));
+            $variable->setCorrectResponse(
+                $this->serializeValueCollection($itemVariable->getCorrectResponse()->getValues())
+            );
         }
 
         if ($itemVariable->hasChoiceSequence()) {
@@ -305,14 +324,26 @@ class ResultMapper extends ConfigurableService
      */
     protected function serializeValueCollection(ValueCollection $valueCollection)
     {
-        $values = array_map(
-            function (Value $value) {
-                return $value->getValue();
-            },
-            iterator_to_array($valueCollection)
-        );
+        $isRecord = false;
+        $values = [];
+        /** @var Value $value */
+        foreach ($valueCollection as $value) {
+            $fieldIdentifier = $value->getFieldIdentifier();
+            $baseType = $value->getBaseType();
+            $isRecord = $isRecord || $fieldIdentifier && $baseType !== -1;
+            $values[] = $isRecord
+                ? [
+                    'name' => $fieldIdentifier,
+                    'base' => [
+                        BaseType::getNameByConstant($baseType) => $value->getValue(),
+                    ]
+                ]
+                : $value->getValue();
+        }
 
-        return implode(';', $values);
+        return $isRecord
+            ? json_encode(['record' => $values])
+            : implode(';', $values);
     }
 
     /**
