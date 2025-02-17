@@ -67,8 +67,8 @@
 	},
 	"config": {
 		"allow-plugins": {
-			"oat-sa/oatbox-extension-installer": true,
-			"oat-sa/composer-npm-bridge": true
+			"openthinklabs/oatbox-extension-installer": true,
+			"openthinklabs/composer-npm-bridge": true
 		}
 	},
 	"require-dev": {
