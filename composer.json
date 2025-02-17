@@ -58,7 +58,7 @@
 		"openthinklabs/generis" : "dev-master",
 		"openthinklabs/tao-core" : "dev-master",
 		"openthinklabs/lib-tao-dtms" : "dev-master",
-		"qtism/qtism": ">=0.25.0"
+		"qtism/qtism": "dev-master"
 	},
 	"autoload" : {
 		"psr-4" : {
